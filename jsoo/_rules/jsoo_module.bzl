@@ -11,9 +11,9 @@ load("@rules_ocaml//ocaml:providers.bzl",
 load(":BUILD.bzl", "jsoo_transition")
 
 ############################
-def _jsoo_library_impl(ctx):
+def _jsoo_module_impl(ctx):
 
-    print("jsoo_library")
+    print("jsoo_module")
 
     tc = ctx.toolchains["@rules_jsoo//toolchain/type:std"]
 
@@ -59,17 +59,13 @@ def _jsoo_library_impl(ctx):
     ]
 
 ####################
-jsoo_library = rule(
-    implementation = _jsoo_library_impl,
+jsoo_module = rule(
+    implementation = _jsoo_module_impl,
     doc = "Turns bc into js",
     attrs = dict(
-        srcs = attr.label_list(
-            allow_files = [".cmo", ".cma"], # True, ## ??
-            # providers must provide .cmo or .cma
-            # providers = [[OcamlProvider],
-            #              [OcamlNsMarker],
-            #              [OcamlArchiveMarker],
-            #              [OcamlLibraryMarker]],
+        src = attr.label(
+            allow_single_file = True,
+            providers = [[OcamlProvider]],
             cfg = jsoo_transition
         ),
         # for cfg attribute above:

@@ -6,14 +6,7 @@ load("@rules_ocaml//ocaml:providers.bzl",
      "OcamlProvider",
      )
 
-def _jsoo_transition_impl(settings, attr):
-    # set target platform to vm force inputs to bytecode
-    return {"//command_line_option:platforms" : "@ocaml//host/target:vm"}
-
-_jsoo_transition = transition(
-    implementation = _jsoo_transition_impl,
-    inputs = [], outputs = ["//command_line_option:platforms"]
-)
+load(":BUILD.bzl", "jsoo_transition")
 
 ###########################
 def _jsoo_binary_impl(ctx):
@@ -46,7 +39,7 @@ def _jsoo_binary_impl(ctx):
     )
 
     # Step 2: link
-    out_exe = ctx.actions.declare_file(ctx.file.main.basename + ".jsoo")
+    out_exe = ctx.actions.declare_file(ctx.file.main.basename + ".out.js")
     args = ctx.actions.args()
     args.add("link")
     args.add_all(ctx.attr.opts)
@@ -98,7 +91,7 @@ jsoo_binary = rule(
         main = attr.label(
             allow_single_file = True, ## ??
             providers = [OcamlExecutableMarker],
-            cfg = _jsoo_transition
+            cfg = jsoo_transition
         ),
         opts = attr.string_list(
             doc = "jsoo link options"
