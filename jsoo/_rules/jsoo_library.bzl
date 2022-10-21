@@ -13,7 +13,7 @@ load(":BUILD.bzl", "jsoo_transition")
 ############################
 def _jsoo_library_impl(ctx):
 
-    print("jsoo_library")
+    print("jsoo_library: %s" % ctx.label)
 
     tc = ctx.toolchains["@rules_jsoo//toolchain/type:std"]
 
@@ -30,7 +30,7 @@ def _jsoo_library_impl(ctx):
 
     ## jsoo compiler can only transpile one .cmo file at a time
     for cmo in ctx.files.srcs: # cmos:
-        if cmo.extension == "cmo":
+        if cmo.extension in ["cmo", "cma"]:
             outfile = ctx.actions.declare_file(cmo.basename + ".js")
 
             args = ctx.actions.args()
@@ -46,16 +46,31 @@ def _jsoo_library_impl(ctx):
                 arguments  = [args],
                 # env  = ctx.attr.env,
                 tools = [tc.compiler],
-                mnemonic = "JSOOCompile",
-                progress_message = "JSOO compilation"
+                mnemonic = "JSOOLibrary",
+                progress_message = "compiling jsoo lib"
             )
             outputs.append(outfile)
 
+    if ctx.attr.deps:
+        indirects = []
+        for d in ctx.attr.deps:
+            indirects.append(d[JsInfo].sources)
+    else:
+        indirects = []
+
+    js_info_depset =depset(
+            direct = outputs,
+            transitive = indirects
+    )
+
+    outputGroupInfo = OutputGroupInfo(
+        all = js_info_depset
+    )
+
     return [
         DefaultInfo(files=depset(direct = outputs)),
-        js_info(
-            sources = depset(direct = outputs)
-        )
+        js_info(sources = js_info_depset),
+        outputGroupInfo
     ]
 
 ####################
@@ -71,6 +86,10 @@ jsoo_library = rule(
             #              [OcamlArchiveMarker],
             #              [OcamlLibraryMarker]],
             cfg = jsoo_transition
+        ),
+        deps = attr.label_list(
+            providers = [JsInfo]
+            # cfg = jsoo_transition
         ),
         # for cfg attribute above:
         _allowlist_function_transition = attr.label(

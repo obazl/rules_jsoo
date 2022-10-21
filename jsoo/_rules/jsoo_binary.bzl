@@ -4,6 +4,7 @@ load("@rules_ocaml//ocaml:providers.bzl",
      "OcamlExecutableMarker",
      "OcamlNsMarker",
      "OcamlProvider",
+     "OcamlTestMarker",
      )
 
 load(":BUILD.bzl", "jsoo_transition")
@@ -16,7 +17,7 @@ def _jsoo_binary_impl(ctx):
 
     tc = ctx.toolchains["@rules_jsoo//toolchain/type:std"]
 
-    print("tc: %s" % tc)
+    # print("tc: %s" % tc)
 
     # Step 1: compile bc executabel to js
     out_main = ctx.actions.declare_file(ctx.file.main.basename + ".js")
@@ -35,7 +36,11 @@ def _jsoo_binary_impl(ctx):
         # env  = ctx.attr.env,
         tools = [tc.compiler],
         mnemonic = "JSOOCompileMain",
-        progress_message = "JSOO compile main."
+        progress_message = "JSOO compiling main: {ws}//{pkg}:{tgt}".format(
+            ws  = "@" + ctx.label.workspace_name if ctx.label.workspace_name else "", ## ctx.workspace_name,
+            pkg = ctx.label.package,
+            tgt=ctx.label.name,
+        )
     )
 
     # Step 2: link
@@ -90,7 +95,11 @@ jsoo_binary = rule(
     attrs = dict(
         main = attr.label(
             allow_single_file = True, ## ??
-            providers = [OcamlExecutableMarker],
+            providers = [
+                [OcamlExecutableMarker],
+                # [OcamlProvider],
+                [OcamlTestMarker]
+            ],
             cfg = jsoo_transition
         ),
         opts = attr.string_list(
