@@ -1,3 +1,9 @@
+JsooInfo = provider(
+    fields = {
+        "runtimes": "list of runtime.js files" # depset?
+    }
+)
+
 def _jsoo_transition_impl(settings, attr):
     # set target platform to vm force inputs to bytecode
     return {"//command_line_option:platforms" : "@ocaml//platforms:vm"}

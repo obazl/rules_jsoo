@@ -19,17 +19,9 @@ def _jsoo_module_impl(ctx):
 
     outputs = []
     cmos = []
-    srcs = None
+    src = None
 
-    # attr defn ensures each src will be .cmo or .cma
-    # for f in ctx.files.srcs:
-    #     cmos.append(s[OcamlProvider].struct)
-        # must be from exports_files or a filegroup
-
-
-
-    ## jsoo compiler can only transpile one .cmo file at a time
-    for cmo in ctx.files.srcs: # cmos:
+    for cmo in ctx.files.src:
         if cmo.extension == "cmo":
             outfile = ctx.actions.declare_file(cmo.basename + ".js")
 
@@ -64,7 +56,7 @@ jsoo_module = rule(
     doc = "Turns bc into js",
     attrs = dict(
         src = attr.label(
-            allow_single_file = True,
+            # allow_single_file = True,
             providers = [[OcamlProvider]],
             cfg = jsoo_transition
         ),

@@ -91,14 +91,14 @@ def _jsoo_binary_impl(ctx):
 ####################
 jsoo_binary = rule(
     implementation = _jsoo_binary_impl,
-    doc = "Compile .cmo and link with JsInfo deps into executable.",
+    doc = "Translate an OCaml executable into js.",
     attrs = dict(
         main = attr.label(
             allow_single_file = True, ## ??
             providers = [
                 [OcamlExecutableMarker],
                 # [OcamlProvider],
-                [OcamlTestMarker]
+                # [OcamlTestMarker]
             ],
             cfg = jsoo_transition
         ),

@@ -7,7 +7,9 @@ def _jsoo_import_impl(ctx):
 
     tc = ctx.toolchains["@rules_jsoo//toolchain/type:std"]
 
-    import_depset =depset(
+    runfiles = ctx.runfiles(files = [ctx.file.src])
+
+    js_info_depset =depset(
             direct = [ctx.file.src]
     )
 
@@ -16,8 +18,11 @@ def _jsoo_import_impl(ctx):
     # )
 
     return [
-        DefaultInfo(files=import_depset),
-        js_info(sources = import_depset),
+        DefaultInfo(
+            files=js_info_depset,
+            runfiles = runfiles
+        ),
+        js_info(sources = js_info_depset),
         # outputGroupInfo
     ]
 
@@ -29,6 +34,10 @@ jsoo_import = rule(
         src = attr.label(
             allow_single_file = [".js"], # True, ## ??
         ),
+        # srcs = attr.label_list(
+        #     allow_empty = False,
+        #     allow_files = [".js"], # True, ## ??
+        # ),
     ),
     executable = False,
     provides = [JsInfo],
